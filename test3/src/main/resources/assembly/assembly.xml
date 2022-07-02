@@ -1,0 +1,60 @@
+<assembly xmlns="http://maven.apache.org/ASSEMBLY/2.0.0"
+          xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+          xsi:schemaLocation="http://maven.apache.org/ASSEMBLY/2.0.0 http://maven.apache.org/xsd/assembly-2.0.0.xsd">
+    <id>${project.artifactId}</id>
+    <formats>
+        <format>jar</format>
+    </formats>
+    <includeBaseDirectory>false</includeBaseDirectory>
+    <baseDirectory>./</baseDirectory>
+
+    <moduleSets>
+        <moduleSet>
+            <includeSubModules>true</includeSubModules>
+            <useAllReactorProjects>true</useAllReactorProjects>
+
+            <sources>
+                <includeModuleDirectory>false</includeModuleDirectory>
+                <fileSets>
+                    <fileSet>
+                        <outputDirectory>sources/${module.artifactId}</outputDirectory>
+                        <excludes>
+                            <exclude>${project.build.directory}/**</exclude>
+                        </excludes>
+                    </fileSet>
+                </fileSets>
+            </sources>
+            <includes>
+                <include>${project.groupId}:test1</include>
+                <include>${project.groupId}:test2</include>
+                <!-- and others... -->
+            </includes>
+<!--            <binaries>-->
+<!--                <attachmentClassifier>aa</attachmentClassifier>-->
+<!--                <includeDependencies>true</includeDependencies>-->
+<!--                <outputDirectory>modules/maven-assembly-plugin</outputDirectory>-->
+<!--                <unpack>false</unpack>-->
+<!--            </binaries>-->
+        </moduleSet>
+    </moduleSets>
+
+    <fileSets>
+        <fileSet>
+            <directory>src/main/resources</directory>
+            <outputDirectory>./config</outputDirectory>
+        </fileSet>
+    </fileSets>
+
+
+<!--    <dependencySets>-->
+<!--        <dependencySet>-->
+<!--            <includes>-->
+<!--                <include>com.andrew:test1</include>-->
+<!--                <include>com.andrew:test2</include>-->
+<!--            </includes>-->
+<!--            <outputDirectory>../lib</outputDirectory>-->
+<!--            <useProjectArtifact>true</useProjectArtifact>-->
+<!--            <useTransitiveDependencies>false</useTransitiveDependencies>-->
+<!--        </dependencySet>-->
+<!--    </dependencySets>-->
+</assembly>
