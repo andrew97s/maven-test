@@ -10,7 +10,7 @@
     <modelVersion>4.0.0</modelVersion>
 
     <artifactId>test3</artifactId>
-    <packaging>pom</packaging>
+    <packaging>jar</packaging>
 
     <properties>
         <maven.compiler.source>8</maven.compiler.source>
@@ -28,22 +28,69 @@
             <artifactId>test2</artifactId>
             <version>1.0</version>
         </dependency>
+
+
         <dependency>
-            <groupId>commons-beanutils</groupId>
-            <artifactId>commons-beanutils</artifactId>
-            <version>1.9.4</version>
-        </dependency>
-        <dependency>
-            <groupId>com.alibaba</groupId>
-            <artifactId>dubbo</artifactId>
-            <version>2.5.9</version>
-            <scope>provided</scope>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-web</artifactId>
         </dependency>
     </dependencies>
 
     <build>
         <finalName>test3</finalName>
+
         <plugins>
+            <!--将当前pom所依赖（包括之间&间接依赖） copy指定目录-->
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-dependency-plugin</artifactId>
+                <executions>
+                    <execution>
+                        <id>copy-dependencies</id>
+                        <phase>prepare-package</phase>
+                        <goals>
+                            <goal>copy-dependencies</goal>
+                        </goals>
+                        <configuration>
+                            <!--排除当前工程 依赖-->
+                            <excludeGroupIds>
+                                com.andrew
+                            </excludeGroupIds>
+                            <outputDirectory>
+                                ${project.build.directory}/lib/
+                            </outputDirectory>
+                        </configuration>
+                    </execution>
+                </executions>
+            </plugin>
+
+            <!--     构建 spring boot jar包       -->
+            <plugin>
+                <groupId>org.springframework.boot</groupId>
+                <artifactId>spring-boot-maven-plugin</artifactId>
+                <version>2.2.6.RELEASE</version>
+                <executions>
+                    <execution>
+                        <goals>
+                            <goal>repackage</goal>
+                        </goals>
+                    </execution>
+                </executions>
+                <configuration>
+                    <!--springboot 执行入口-->
+                    <mainClass>test3.Application</mainClass>
+
+                    <!--此处忽略所有第三方jar包-->
+                    <includes>
+                        <include>
+                            <groupId>nothing</groupId>
+                            <artifactId>nothing</artifactId>
+                        </include>
+                    </includes>
+                </configuration>
+            </plugin>
+
+            <!-- maven 组装 插件 （自定义构建jar包）-->
             <plugin>
                 <artifactId>maven-assembly-plugin</artifactId>
                 <version>3.3.0</version>
@@ -55,15 +102,48 @@
                             <goal>single</goal>
                         </goals>
                         <configuration>
+                            <!--此处构建的assembly 包 与jar包 重名 导致jar包被覆盖-->
                             <appendAssemblyId>false</appendAssemblyId>
                             <descriptors>
                                 <descriptor>src/main/resources/assembly/assembly.xml</descriptor>
                             </descriptors>
+
+                            <archive>
+                                <manifest>
+                                    <!--程序启动类application.java的路径-->
+                                    <mainClass>org.springframework.boot.loader.JarLauncher</mainClass>
+                                    <!--自动添加当前 pom 所依赖的jar包 manifest-->
+                                    <addClasspath>true</addClasspath>
+                                    <classpathPrefix>lib</classpathPrefix>
+                                </manifest>
+
+                                <!--spring boot 所需的清单属性-->
+                                <manifestEntries>
+                                    <Start-Class>test3.Application</Start-Class>
+                                    <Spring-Boot-Classes>BOOT-INF/classes/</Spring-Boot-Classes>
+                                    <Spring-Boot-Lib>BOOT-INF/lib/</Spring-Boot-Lib>
+                                    <Spring-Boot-Version>2.2.6.RELEASE</Spring-Boot-Version>
+                                </manifestEntries>
+                            </archive>
                         </configuration>
                     </execution>
                 </executions>
             </plugin>
+
         </plugins>
     </build>
+
+    <repositories>
+        <repository>
+            <id>alimaven</id>
+            <url>https://maven.aliyun.com/repository/public</url>
+        </repository>
+    </repositories>
+    <pluginRepositories>
+        <pluginRepository>
+            <id>alimaven</id>
+            <url>https://maven.aliyun.com/repository/public</url>
+        </pluginRepository>
+    </pluginRepositories>
 
 </project>
